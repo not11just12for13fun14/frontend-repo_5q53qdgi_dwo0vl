@@ -49,7 +49,7 @@ export default function Hero() {
         </div>
 
         <div className="relative h-[380px] sm:h-[480px] lg:h-[560px] order-1 lg:order-2 rounded-2xl overflow-hidden border border-white/10 bg-slate-900/60 shadow-2xl">
-          <ParallaxCharacters />
+          <DreamStoryScene />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-70" />
           <div className="pointer-events-none absolute -inset-1 rounded-3xl bg-gradient-to-r from-fuchsia-500/20 via-indigo-500/10 to-cyan-500/20 blur-xl" />
         </div>
@@ -58,7 +58,7 @@ export default function Hero() {
   )
 }
 
-function ParallaxCharacters() {
+function DreamStoryScene() {
   const ref = useRef(null)
   const [t, setT] = useState({ rx: 0, ry: 0, tx: 0, ty: 0 })
 
@@ -70,165 +70,226 @@ function ParallaxCharacters() {
     const py = (e.clientY - rect.top) / rect.height
     const rx = (0.5 - py) * 8
     const ry = (px - 0.5) * 8
-    const tx = (px - 0.5) * 16
-    const ty = (py - 0.5) * 16
+    const tx = (px - 0.5) * 18
+    const ty = (py - 0.5) * 18
     setT({ rx, ry, tx, ty })
   }
-
-  function reset() {
-    setT({ rx: 0, ry: 0, tx: 0, ty: 0 })
-  }
-
-  const layers = [
-    { id: 'l1', depth: 0.35 },
-    { id: 'l2', depth: 0.55 },
-    { id: 'l3', depth: 0.8 },
-  ]
+  function reset() { setT({ rx: 0, ry: 0, tx: 0, ty: 0 }) }
 
   return (
     <div
       ref={ref}
       onMouseMove={handleMove}
       onMouseLeave={reset}
-      className="absolute inset-0"
+      className="absolute inset-0 rm:stop-anim"
       role="img"
-      aria-label="Friendly, diverse characters celebrating growth and wellbeing"
+      aria-label="Cartoon dream sequence: a job seeker helped by SmashThatJob from confusion to clarity and celebration"
     >
       <style>{`
-        @keyframes floatSlow { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
-        @keyframes floatFast { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-10px) } }
+        @keyframes floatA { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
+        @keyframes floatB { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-12px) } }
+        @keyframes drift { 0% { transform: translateX(0) } 100% { transform: translateX(-60px) } }
+        @keyframes twinkle { 0%,100% { opacity: .5 } 50% { opacity: 1 } }
+        @media (prefers-reduced-motion: reduce) {
+          .rm\\:stop-anim *, .rm\\:stop-anim { animation: none !important; transition: none !important; }
+        }
       `}</style>
 
-      {/* Ambient backdrop */}
-      <div className="absolute -inset-24 opacity-60" aria-hidden>
-        <div className="absolute inset-0 rounded-full blur-3xl" style={{
-          background: 'radial-gradient(60% 60% at 50% 50%, rgba(34,197,94,0.15) 0%, rgba(56,189,248,0.12) 40%, rgba(236,72,153,0.10) 80%, transparent 100%)'
-        }} />
-      </div>
+      {/* Dreamy night sky */}
+      <div className="absolute inset-0" style={{
+        transform: `perspective(900px) rotateX(${t.rx}deg) rotateY(${t.ry}deg)`,
+        transition: 'transform 120ms ease-out'
+      }}>
+        {/* gradient aura */}
+        <div className="absolute -inset-28 opacity-70" aria-hidden>
+          <div className="absolute inset-0 rounded-full blur-3xl" style={{
+            background: 'radial-gradient(60% 60% at 50% 50%, rgba(236,72,153,0.14) 0%, rgba(56,189,248,0.12) 45%, rgba(16,185,129,0.12) 85%, transparent 100%)'
+          }} />
+        </div>
 
-      {/* Stage */}
-      <div
-        className="absolute inset-0"
-        style={{
-          transform: `perspective(900px) rotateX(${t.rx}deg) rotateY(${t.ry}deg)`,
-          transition: 'transform 120ms ease-out'
-        }}
-      >
-        {/* Confetti-like soft dots for happiness */}
-        <SoftDot x="12%" y="18%" color="#A7F3D0" blur="28px" t={t} factor={0.35} />
-        <SoftDot x="84%" y="26%" color="#FDE68A" blur="30px" t={t} factor={0.25} />
-        <SoftDot x="72%" y="78%" color="#BAE6FD" blur="26px" t={t} factor={0.3} />
+        {/* stars */}
+        {Array.from({ length: 24 }).map((_, i) => (
+          <Star key={i} x={`${5 + (i*4)%90}%`} y={`${8 + (i*7)%80}%`} size={1 + (i % 3)} t={t} twinkleDelay={i * 0.15} />
+        ))}
+        {/* moon */}
+        <Moon x="78%" y="14%" t={t} />
+        {/* clouds */}
+        <Cloud x="12%" y="18%" width={160} t={t} depth={0.25} />
+        <Cloud x="68%" y="26%" width={200} t={t} depth={0.35} />
+        <Cloud x="32%" y="70%" width={180} t={t} depth={0.2} />
 
-        {/* Character cluster */}
-        <CharacterCard
-          x="14%" y="56%" scale={0.9} hue="amber"
-          skin="#F1C27D" shirt="#0EA5E9" bgFrom="rgba(250,204,21,0.25)" bgTo="rgba(56,189,248,0.2)"
-          smile
-          t={t}
-          depth={layers[0].depth}
-          float='floatSlow'
-          label="Cheerful person with curly hair and blue shirt"
+        {/* Story panels: 1) overwhelmed 2) assisted by the app 3) celebration */}
+        <StoryPanel
+          x="8%" y="50%" t={t} depth={0.35} title="Feeling lost" subtitle="Too many job posts, not enough signal"
+          mood="sad"
         />
-        <CharacterCard
-          x="62%" y="54%" scale={0.92} hue="emerald"
-          skin="#C68642" shirt="#22C55E" bgFrom="rgba(16,185,129,0.25)" bgTo="rgba(99,102,241,0.2)"
-          smile
-          t={t}
-          depth={layers[1].depth}
-          float='floatFast'
-          label="Happy person with short hair and green shirt"
+        <StoryPanel
+          x="36%" y="34%" t={t} depth={0.55} title="Guided by clarity" subtitle="Our app highlights fit and evidence"
+          mood="assist" highlight
         />
-        <CharacterCard
-          x="38%" y="22%" scale={1.05} hue="sky"
-          skin="#FFDBAC" shirt="#38BDF8" bgFrom="rgba(56,189,248,0.25)" bgTo="rgba(236,72,153,0.2)"
-          smile
-          t={t}
-          depth={layers[2].depth}
-          float='floatSlow'
-          label="Smiling person with bun and sky shirt"
+        <StoryPanel
+          x="68%" y="52%" t={t} depth={0.8} title="Message received" subtitle="Replies and interviews roll in"
+          mood="joy"
         />
-        <CharacterCard
-          x="78%" y="18%" scale={0.78} hue="violet"
-          skin="#8D5524" shirt="#8B5CF6" bgFrom="rgba(147,51,234,0.2)" bgTo="rgba(16,185,129,0.2)"
-          smile
-          t={t}
-          depth={layers[0].depth}
-          float='floatSlow'
-          label="Playful person with glasses and violet shirt"
-        />
-        <CharacterCard
-          x="8%" y="20%" scale={0.75} hue="pink"
-          skin="#E0AC69" shirt="#EC4899" bgFrom="rgba(236,72,153,0.22)" bgTo="rgba(56,189,248,0.18)"
-          smile
-          t={t}
-          depth={layers[1].depth}
-          float='floatFast'
-          label="Joyful person with short fringe and pink shirt"
-        />
+
+        {/* helper sprites */}
+        <HelperTick x="44%" y="46%" t={t} depth={0.6} />
+        <HelperTick x="60%" y="40%" t={t} depth={0.75} />
+        <Sparkle x="72%" y="38%" t={t} depth={0.7} />
+        <Sparkle x="76%" y="64%" t={t} depth={0.6} />
       </div>
     </div>
   )
 }
 
-function SoftDot({ x, y, color, blur, t, factor }) {
+function Star({ x, y, size = 2, t, twinkleDelay = 0 }) {
+  const tx = (t.tx || 0) * 0.12
+  const ty = (t.ty || 0) * 0.12
   return (
     <div
       className="absolute rounded-full"
-      style={{
-        left: x, top: y, width: 14, height: 14,
-        backgroundColor: color,
-        filter: `blur(${blur})`, opacity: 0.6,
-        transform: `translate3d(${(t.tx||0)*factor}px, ${(t.ty||0)*factor}px, 0)`,
-        transition: 'transform 150ms ease-out'
-      }}
+      style={{ left: x, top: y, width: size + 1, height: size + 1, backgroundColor: 'white', opacity: 0.8,
+        transform: `translate(${tx}px, ${ty}px)`, transition: 'transform 150ms ease-out',
+        animation: `twinkle 2.6s ease-in-out ${twinkleDelay}s infinite` }}
       aria-hidden
     />
   )
 }
 
-function CharacterCard({ x, y, scale = 1, skin, shirt, bgFrom, bgTo, smile = true, t, depth = 0.6, float = 'floatSlow', label }) {
-  const px = (t.tx || 0) * depth
-  const py = (t.ty || 0) * depth
+function Moon({ x, y, t }) {
+  const tx = (t.tx || 0) * 0.18
+  const ty = (t.ty || 0) * 0.18
+  return (
+    <div className="absolute" style={{ left: x, top: y, transform: `translate(${tx}px, ${ty}px)`, transition: 'transform 150ms ease-out' }} aria-hidden>
+      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-b from-yellow-200 to-yellow-400 shadow-[0_0_60px_rgba(250,204,21,0.25)]" />
+    </div>
+  )
+}
 
+function Cloud({ x, y, width = 160, t, depth = 0.3 }) {
+  const tx = (t.tx || 0) * depth
+  const ty = (t.ty || 0) * depth
+  return (
+    <div className="absolute" style={{ left: x, top: y, transform: `translate(${tx}px, ${ty}px)`, transition: 'transform 140ms ease-out' }} aria-hidden>
+      <div className="relative" style={{ width }}>
+        <div className="absolute -top-2 left-6 h-8 w-8 rounded-full bg-white/10 blur" />
+        <div className="h-8 rounded-full bg-white/8 backdrop-blur-sm border border-white/5" style={{ width }} />
+        <div className="absolute -top-3 left-10 h-10 w-16 rounded-full bg-white/10 blur" />
+      </div>
+    </div>
+  )
+}
+
+function StoryPanel({ x, y, t, depth = 0.5, title, subtitle, mood = 'assist', highlight = false }) {
+  const tx = (t.tx || 0) * depth
+  const ty = (t.ty || 0) * depth
   return (
     <figure
-      aria-label={label}
       className="absolute select-none"
-      style={{
-        left: x,
-        top: y,
-        transform: `translate3d(${px}px, ${py}px, 0) scale(${scale})`,
-        transition: 'transform 140ms ease-out'
-      }}
+      style={{ left: x, top: y, transform: `translate3d(${tx}px, ${ty}px, 0)`, transition: 'transform 140ms ease-out' }}
+      aria-label={`${title}: ${subtitle}`}
     >
-      <div
-        className="relative w-44 h-52 rounded-2xl p-3 shadow-xl"
-        style={{
-          background: `linear-gradient(135deg, ${bgFrom}, ${bgTo})`,
-          border: '1px solid rgba(255,255,255,0.1)',
-          animation: `${float} 7s ease-in-out infinite`
-        }}
-      >
-        {/* face circle */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-7 w-28 h-28 rounded-full" style={{ backgroundColor: skin, boxShadow: 'inset 0 -6px 0 rgba(0,0,0,0.06)' }} />
-        {/* hair */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-4 w-30 h-16 rounded-[24px] bg-slate-800" style={{ width: 120 }} />
-        {/* eyes */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-[90px] flex gap-6" aria-hidden>
-          <div className="w-2.5 h-2.5 rounded-full bg-slate-900/90" />
-          <div className="w-2.5 h-2.5 rounded-full bg-slate-900/90" />
+      <div className="relative w-60 sm:w-72 h-40 sm:h-44 rounded-2xl p-3 shadow-xl border border-white/10" style={{
+        background: highlight
+          ? 'linear-gradient(135deg, rgba(236,72,153,0.20), rgba(56,189,248,0.20))'
+          : 'linear-gradient(135deg, rgba(15,23,42,0.6), rgba(2,6,23,0.6))',
+      }}>
+        {/* subtle shine */}
+        <div className="absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.10), transparent 45%)', mixBlendMode: 'overlay' }} aria-hidden />
+
+        {/* cartoon avatar */}
+        <Avatar mood={mood} />
+
+        {/* captions */}
+        <figcaption className="absolute bottom-3 left-3 right-3 text-xs sm:text-sm">
+          <p className="font-semibold text-slate-100 drop-shadow">{title}</p>
+          <p className="text-slate-300/80">{subtitle}</p>
+        </figcaption>
+
+        {/* ambient floaters */}
+        <div className="absolute -top-2 -right-2 w-24 h-24" aria-hidden>
+          <div className="absolute right-3 top-4 w-2 h-2 rounded-full bg-fuchsia-300/80" style={{ animation: 'floatA 6s ease-in-out infinite' }} />
+          <div className="absolute right-8 top-6 w-1.5 h-1.5 rounded-full bg-cyan-300/80" style={{ animation: 'floatB 7s ease-in-out infinite' }} />
         </div>
-        {/* smile */}
-        {smile && (
-          <svg className="absolute left-1/2 -translate-x-1/2 top-[104px]" width="64" height="28" viewBox="0 0 64 28" aria-hidden>
-            <path d="M8 10 C 24 28, 40 28, 56 10" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" opacity="0.9" />
-          </svg>
-        )}
-        {/* shirt */}
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-4 w-28 h-24 rounded-[18px]" style={{ backgroundColor: shirt }} />
-        {/* shine */}
-        <div className="absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.12), transparent 40%)', mixBlendMode: 'overlay' }} aria-hidden />
       </div>
     </figure>
+  )
+}
+
+function Avatar({ mood = 'assist' }) {
+  const face = (
+    <>
+      <div className="absolute left-4 top-4 w-20 h-20 rounded-full" style={{ backgroundColor: '#FFDBAC', boxShadow: 'inset 0 -6px 0 rgba(0,0,0,0.06)' }} />
+      <div className="absolute left-6 top-3 w-16 h-10 rounded-[24px] bg-slate-800" />
+      <div className="absolute left-11 top-[58px] flex gap-6" aria-hidden>
+        <div className="w-2.5 h-2.5 rounded-full bg-slate-900/90" />
+        <div className="w-2.5 h-2.5 rounded-full bg-slate-900/90" />
+      </div>
+    </>
+  )
+
+  if (mood === 'sad') {
+    return (
+      <div className="absolute inset-3 rounded-xl bg-slate-900/50">
+        {face}
+        <svg className="absolute left-1/2 -translate-x-1/2 top-[88px]" width="60" height="26" viewBox="0 0 60 26" aria-hidden>
+          <path d="M8 18 C 24 4, 36 4, 52 18" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" opacity="0.8" />
+        </svg>
+        <div className="absolute right-3 top-3 text-[10px] text-slate-300/80 bg-slate-800/60 border border-white/10 rounded-md px-2 py-1">404s. Ghosted.</div>
+      </div>
+    )
+  }
+
+  if (mood === 'joy') {
+    return (
+      <div className="absolute inset-3 rounded-xl bg-slate-900/40">
+        {face}
+        <svg className="absolute left-1/2 -translate-x-1/2 top-[88px]" width="60" height="26" viewBox="0 0 60 26" aria-hidden>
+          <path d="M8 10 C 24 24, 36 24, 52 10" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" opacity="0.9" />
+        </svg>
+        <div className="absolute right-3 top-3 text-[10px] text-emerald-200 bg-emerald-500/20 border border-emerald-300/20 rounded-md px-2 py-1">Interview booked ✓</div>
+      </div>
+    )
+  }
+
+  // assist
+  return (
+    <div className="absolute inset-3 rounded-xl bg-slate-900/45">
+      {face}
+      <svg className="absolute left-1/2 -translate-x-1/2 top-[88px]" width="60" height="26" viewBox="0 0 60 26" aria-hidden>
+        <path d="M8 12 C 24 20, 36 20, 52 12" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" opacity="0.9" />
+      </svg>
+      {/* mini UI hints */}
+      <div className="absolute right-3 top-3 text-[10px] text-sky-200 bg-sky-500/20 border border-sky-300/20 rounded-md px-2 py-1">Best-fit roles</div>
+      <div className="absolute left-28 top-14 w-28 h-16 rounded-lg bg-slate-800/70 border border-white/10" />
+      <div className="absolute left-28 top-14 -ml-2 -mt-2 w-4 h-4 rounded-full bg-fuchsia-400/80 shadow-[0_0_24px_rgba(217,70,239,0.6)]" style={{ animation: 'floatA 6s ease-in-out infinite' }} />
+      <div className="absolute left-40 top-24 -ml-2 -mt-2 w-4 h-4 rounded-full bg-cyan-300/90 shadow-[0_0_24px_rgba(56,189,248,0.6)]" style={{ animation: 'floatB 7s ease-in-out infinite' }} />
+    </div>
+  )
+}
+
+function HelperTick({ x, y, t, depth = 0.6 }) {
+  const tx = (t.tx || 0) * depth
+  const ty = (t.ty || 0) * depth
+  return (
+    <div className="absolute" style={{ left: x, top: y, transform: `translate(${tx}px, ${ty}px)`, transition: 'transform 140ms ease-out' }} aria-hidden>
+      <div className="w-8 h-8 rounded-full bg-emerald-400/30 backdrop-blur border border-emerald-300/30 flex items-center justify-center" style={{ boxShadow: '0 0 40px rgba(16,185,129,0.35)' }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
+      </div>
+    </div>
+  )
+}
+
+function Sparkle({ x, y, t, depth = 0.6 }) {
+  const tx = (t.tx || 0) * depth
+  const ty = (t.ty || 0) * depth
+  return (
+    <div className="absolute" style={{ left: x, top: y, transform: `translate(${tx}px, ${ty}px)`, transition: 'transform 140ms ease-out' }} aria-hidden>
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" className="opacity-80">
+        <path d="M12 2l2.5 5L20 9.5 15 12l-3 5-3-5-5-2.5L9.5 7 12 2z" />
+      </svg>
+    </div>
   )
 }

@@ -1,5 +1,5 @@
-import Spline from '@splinetool/react-spline'
-import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react'
 
 export default function Hero() {
   return (
@@ -49,11 +49,155 @@ export default function Hero() {
         </div>
 
         <div className="relative h-[380px] sm:h-[480px] lg:h-[560px] order-1 lg:order-2 rounded-2xl overflow-hidden border border-white/10 bg-slate-900/60 shadow-2xl">
-          <Spline scene="https://prod.spline.design/qQUip0dJPqrrPryE/scene.splinecode" style={{ width: '100%', height: '100%' }} />
+          <ParallaxEmblem />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-70" />
           <div className="pointer-events-none absolute -inset-1 rounded-3xl bg-gradient-to-r from-fuchsia-500/20 via-indigo-500/10 to-cyan-500/20 blur-xl" />
         </div>
       </div>
     </section>
+  )
+}
+
+function ParallaxEmblem() {
+  const ref = useRef(null)
+  const [t, setT] = useState({ rx: 0, ry: 0, tx: 0, ty: 0 })
+
+  function handleMove(e) {
+    const el = ref.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const px = (e.clientX - rect.left) / rect.width
+    const py = (e.clientY - rect.top) / rect.height
+    const rx = (0.5 - py) * 10 // tilt X
+    const ry = (px - 0.5) * 10 // tilt Y
+    const tx = (px - 0.5) * 16 // translate X
+    const ty = (py - 0.5) * 16 // translate Y
+    setT({ rx, ry, tx, ty })
+  }
+
+  function reset() {
+    setT({ rx: 0, ry: 0, tx: 0, ty: 0 })
+  }
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={handleMove}
+      onMouseLeave={reset}
+      className="absolute inset-0 grid place-items-center"
+      aria-label="Wellbeing emblem with subtle parallax"
+    >
+      {/* Ambient backdrop */}
+      <div className="absolute -inset-24 opacity-60" aria-hidden>
+        <div className="absolute inset-0 rounded-full blur-3xl" style={{
+          background: 'radial-gradient(60% 60% at 50% 50%, rgba(34,197,94,0.15) 0%, rgba(56,189,248,0.12) 40%, rgba(236,72,153,0.10) 80%, transparent 100%)'
+        }} />
+      </div>
+
+      {/* Layer group with tilt */}
+      <div
+        style={{
+          transform: `perspective(900px) rotateX(${t.rx}deg) rotateY(${t.ry}deg)`,
+          transition: 'transform 120ms ease-out'
+        }}
+        className="relative w-[72%] sm:w-[68%] lg:w-[60%] aspect-square"
+      >
+        {/* Outer ring */}
+        <div
+          className="absolute inset-0 rounded-[28px] p-[2px]"
+          style={{
+            background: 'linear-gradient(135deg, rgba(250,204,21,0.35), rgba(16,185,129,0.35), rgba(59,130,246,0.35))'
+          }}
+        >
+          <div className="h-full w-full rounded-[26px] bg-slate-900/70 backdrop-blur-md" />
+        </div>
+
+        {/* Glow halo */}
+        <div className="absolute -inset-6 rounded-[32px] bg-gradient-to-r from-amber-300/15 via-emerald-300/10 to-sky-300/15 blur-2xl" aria-hidden />
+
+        {/* Central orb */}
+        <div
+          className="absolute inset-4 rounded-[22px] shadow-2xl"
+          style={{
+            background: 'radial-gradient(120% 120% at 10% 10%, rgba(250,204,21,0.25), transparent 40%), radial-gradient(120% 120% at 90% 20%, rgba(16,185,129,0.28), transparent 45%), radial-gradient(120% 120% at 50% 90%, rgba(56,189,248,0.28), rgba(2,6,23,0.6) 70%)'
+          }}
+        >
+          <div className="absolute inset-0 rounded-[22px] bg-gradient-to-br from-slate-900/40 via-slate-900/20 to-slate-900/60" />
+
+          {/* Soft sheen */}
+          <div className="absolute -inset-px rounded-[22px]" style={{
+            background: 'conic-gradient(from 120deg at 50% 50%, rgba(255,255,255,0.08), transparent 30%, rgba(255,255,255,0.08) 60%, transparent 90%)',
+            mixBlendMode: 'overlay',
+            opacity: 0.9
+          }} aria-hidden />
+
+          {/* Smile path */}
+          <svg
+            className="absolute inset-0"
+            viewBox="0 0 100 100"
+            role="img"
+            aria-label="Smiling arc indicating wellbeing"
+            style={{ transform: `translate3d(${t.tx}px, ${t.ty}px, 0)` , transition: 'transform 120ms ease-out'}}
+          >
+            <defs>
+              <linearGradient id="smileStroke" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#FACC15" />
+                <stop offset="50%" stopColor="#10B981" />
+                <stop offset="100%" stopColor="#38BDF8" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M25 58 C 40 78, 60 78, 75 58"
+              fill="none"
+              stroke="url(#smileStroke)"
+              strokeWidth="5"
+              strokeLinecap="round"
+              opacity="0.95"
+            />
+            {/* Eyes */}
+            <circle cx="38" cy="42" r="3" fill="white" opacity="0.9" />
+            <circle cx="62" cy="42" r="3" fill="white" opacity="0.9" />
+          </svg>
+
+          {/* Confidence tick */}
+          <div
+            className="absolute right-6 top-6 h-10 w-10 rounded-full grid place-items-center shadow-lg"
+            style={{
+              transform: `translate3d(${t.tx * 0.6}px, ${t.ty * 0.6}px, 0)`,
+              transition: 'transform 120ms ease-out',
+              background: 'linear-gradient(135deg, rgba(16,185,129,0.25), rgba(56,189,248,0.25))',
+              border: '1px solid rgba(255,255,255,0.12)'
+            }}
+            aria-hidden
+          >
+            <Sparkles className="h-5 w-5 text-emerald-300" />
+          </div>
+
+          {/* Floating happy dots */}
+          <Dot x="18%" y="22%" size={8} color="#FDE68A" t={t} factor={0.4} />
+          <Dot x="82%" y="50%" size={7} color="#A7F3D0" t={t} factor={0.5} />
+          <Dot x="36%" y="78%" size={6} color="#BAE6FD" t={t} factor={0.35} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Dot({ x, y, size, color, t, factor }) {
+  return (
+    <div
+      className="absolute rounded-full shadow"
+      style={{
+        left: x,
+        top: y,
+        width: size,
+        height: size,
+        backgroundColor: color,
+        boxShadow: `0 0 24px ${color}55`,
+        transform: `translate3d(${(t.tx || 0) * factor}px, ${(t.ty || 0) * factor}px, 0)`,
+        transition: 'transform 150ms ease-out'
+      }}
+      aria-hidden
+    />
   )
 }
